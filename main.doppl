@@ -1,5 +1,0 @@
-task(1) myTask { 
-    lol = byte;
-    init: {}
-    hello: {}
-}
