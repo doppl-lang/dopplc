@@ -24,9 +24,9 @@
 
 [0-9]+\b                        return 'NUMBER_LITERAL'
 \".*\"                          return 'STRING_LITERAL'
-[a-zA-Z]+[0-9a-zA-Z_]\b         return 'IDENTIFIER'
+[a-zA-Z]+[0-9a-zA-Z_]*\b        return 'IDENTIFIER'
 
-";"                             return 'NEWLINE'
+';'                             return 'NEWLINE'
 <<EOF>>                         return 'EOF'
 .                               return 'INVALID'
 
@@ -44,7 +44,7 @@ task
     : taskheader '{' taskbody '}' EOF
         { 
             $$ = { header: $1, body: $3 }; 
-            console.log($$);
+            console.log($$); // TODO : change console.log with C++ code generator function
         }
     ;
 
