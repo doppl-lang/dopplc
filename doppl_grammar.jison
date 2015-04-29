@@ -4,7 +4,7 @@
 %lex
 %%
 
-\s+                             /* ignore whitespaces*/
+
 
 \b"task"\b                      return 'TASK'
 \b"init"\b                      return 'INIT'
@@ -26,7 +26,9 @@
 \".*\"                          return 'STRING_LITERAL'
 [a-zA-Z]+[0-9a-zA-Z_]*\b        return 'IDENTIFIER'
 
-';'                             return 'NEWLINE'
+"#".*\n                          /* ignore comments */
+[ \t]+                          return 'WHITESPACE'
+\n                              return 'NEWLINE'
 <<EOF>>                         return 'EOF'
 .                               return 'INVALID'
 
@@ -41,7 +43,7 @@
 %% /* language grammar */
 
 task
-    : taskheader '{' taskbody '}' EOF
+    : taskheader '{' taskbody '}' whitespaces EOF
         { 
             $$ = { header: $1, body: $3 }; 
             console.log($$); // TODO : change console.log with C++ code generator function
@@ -49,49 +51,58 @@ task
     ;
 
 taskheader
-    : TASK '(' NUMBER_LITERAL ')' IDENTIFIER
+    : whitespaces TASK whitespaces '(' whitespaces NUMBER_LITERAL whitespaces ')' whitespaces IDENTIFIER whitespaces
         { 
-            $$ = { range: $3, name: $5 };
+            $$ = { range: $6, name: $10 };
         }
-    | error
+ /*   | error
         {   
             console.log("");
             console.log("Syntax error on line: " + @$.first_line + ':' + @$.first_column + '   Invalid task header.');
-        }
+        }*/
     ;
 
 taskbody
-    : declarations init_state_declaration declarations
+    : init_state_declaration
+        {
+            $$ = { init_state: $2 , members: [], states: [] };
+        }
+    | init_state_declaration declarations
+        {
+            $$ = { init_state: $1 , members: $2.members, states: $2.states };
+        }
+    | declarations init_state_declaration
+        {
+            $$ = { init_state: $2 , members: $1.members, states: $1.states };
+        }
+    | declarations init_state_declaration declarations
         {
             var members = [];
             var states = [];
             members = members.concat($1.members);
             members = members.concat($3.members);
-            states = states.concat($1.states);
             states = states.concat($3.states);
+            states = states.concat($5.states);
             $$ = { init_state: $2 , members: members, states: states };
         }
-    | init_state_declaration declarations
-        {
-            $$ = { init_state: $1, members: $2.members, states: $2.states };
-        }
-    | declarations init_state_declaration
-        {
-            $$ = { init_state: $2, members: $1.members, states: $1.states };
-        }
-    | init_state_declaration
-        {
-            $$ = { init_state: $1, members: [], states: [] };
-        }
-    | error
+    
+  /*  | error
         {   
             console.log("");
             console.log("Syntax error on line: " + @$.first_line + ':' + @$.first_column + '   Invalid task body.');
-        }
+        }*/
     ;
 
 declarations
-    : declarations member_declaration
+    : state_declaration
+        {
+            $$ = { members: [], states: [$1] };
+        }
+    | member_declaration
+        {
+            $$ = { members: [$1], states: [] };
+        }
+    | declarations member_declaration
         {
             $1.members.push($2);
             $$ = { members: $1.members , states: $1.states };
@@ -101,26 +112,27 @@ declarations
             $1.states.push($2);
             $$ = { members: $1.members, states: $1.states };
         }
-    | state_declaration
-        {
-            $$ = { members: [], states: [$1] };
-        }
-    | member_declaration
-        {
-            $$ = { members: [$1], states: [] };
-        }
     ;
 
 member_declaration
-    : IDENTIFIER '=' type newlines
+    : whitespaces IDENTIFIER whitespaces '=' whitespaces type spaces NEWLINE
+        {
+            $$ = $2;
+        }
     ;
 
 state_declaration
-    : IDENTIFIER ':' '{' '}'
+    : whitespaces IDENTIFIER whitespaces ':' whitespaces '{' whitespaces '}' spaces NEWLINE
+        {
+            $$ = $2;
+        }
     ;
 
 init_state_declaration
-    : INIT ':' '{' '}' 
+    : whitespaces INIT whitespaces ':' whitespaces '{' whitespaces '}' spaces NEWLINE
+        {
+            $$ = $2;
+        }
     ;
 
 type
@@ -134,4 +146,15 @@ type
 newlines
     : NEWLINE
     | newlines NEWLINE
+    ;
+
+spaces  
+    : WHITESPACE
+    |
+    ;
+
+whitespaces
+    : NEWLINE whitespaces
+    | WHITESPACE whitespaces
+    |
     ;
