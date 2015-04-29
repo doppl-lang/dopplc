@@ -1,13 +1,28 @@
 task(12) myTask {
     #Line comment
 
-    my_int = int
+    an_int = int
 
-    my_state: {
+    a_state: {
 
     }
+
+    a_byte = byte
 
     init: {
+        another_byte = byte
+        internal_state: {
+            very_internal_state: {
+
+            }
+            a_float = float
+        }
+    }
+
+    another_state: {
 
     }
+     
+    a_string = string
+
 }

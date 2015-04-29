@@ -4,8 +4,6 @@
 %lex
 %%
 
-
-
 \b"task"\b                      return 'TASK'
 \b"init"\b                      return 'INIT'
 
@@ -46,116 +44,89 @@ task
     : taskheader '{' taskbody '}' whitespaces EOF
         { 
             $$ = { header: $1, body: $3 }; 
-            $$.header.parent = $$;
-            $$.body.parent = $$;
-            console.log($$); // TODO : change console.log with C++ code generator function
+            require('./ast').provide($$);
         }
     ;
 
 taskheader
     : whitespaces TASK whitespaces '(' whitespaces NUMBER_LITERAL whitespaces ')' whitespaces IDENTIFIER whitespaces
         { 
-            $$ = { range: $6, name: $10 };
-            $$.range.parent = $$;
-            $$.name.parent = $$;
+            $$ = { range: $6, id: $10 };
         }
- /*   | error
-        {   
-            console.log("");
-            console.log("Syntax error on line: " + @$.first_line + ':' + @$.first_column + '   Invalid task header.');
-        }*/
     ;
 
 taskbody
-    : init_state_declaration
+    : init_state_declaration whitespaces
         {
             $$ = { init_state: $2 , members: [], states: [] };
-            $$.init_state.parent = $$;
-            $$.members.parent = $$;
-            $$.states.parent = $$;
         }
-    | init_state_declaration declarations
+    | init_state_declaration declarations whitespaces
         {
             $$ = { init_state: $1 , members: $2.members, states: $2.states };
-            $$.init_state.parent = $$;
-            $$.members.parent = $$;
-            $$.states.parent = $$;
         }
-    | declarations init_state_declaration
+    | declarations init_state_declaration whitespaces
         {
             $$ = { init_state: $2 , members: $1.members, states: $1.states };
-            $$.init_state.parent = $$;
-            $$.members.parent = $$;
-            $$.states.parent = $$;
         }
-    | declarations init_state_declaration declarations
+    | declarations init_state_declaration declarations whitespaces
         {
             var members = [];
             var states = [];
             members = members.concat($1.members);
             members = members.concat($3.members);
+            states = states.concat($1.states);
             states = states.concat($3.states);
-            states = states.concat($5.states);
             $$ = { init_state: $2 , members: members, states: states };
-            $$.init_state.parent = $$;
-            $$.members.parent = $$;
-            $$.states.parent = $$;
         }
-    
-  /*  | error
-        {   
-            console.log("");
-            console.log("Syntax error on line: " + @$.first_line + ':' + @$.first_column + '   Invalid task body.');
-        }*/
     ;
 
 declarations
     : state_declaration
         {
             $$ = { members: [], states: [$1] };
-            $$.members.parent = $$;
-            $$.states.parent = $$;
         }
     | member_declaration
         {
             $$ = { members: [$1], states: [] };
-            $$.members.parent = $$;
-            $$.states.parent = $$;
         }
     | declarations member_declaration
         {
             $1.members.push($2);
             $$ = { members: $1.members , states: $1.states };
-            $$.members.parent = $$;
-            $$.states.parent = $$;
         }
     | declarations state_declaration
         {
             $1.states.push($2);
             $$ = { members: $1.members, states: $1.states };
-            $$.members.parent = $$;
-            $$.states.parent = $$;
+        }
+    ;
+
+statebody
+    : declarations whitespaces
+    | whitespaces
+        {
+            $$ = { members: [], states: [] };
         }
     ;
 
 member_declaration
     : whitespaces IDENTIFIER whitespaces '=' whitespaces type spaces NEWLINE
         {
-            $$ = $2;
+            $$ = { id: $2, type: $6 };
         }
     ;
 
 state_declaration
-    : whitespaces IDENTIFIER whitespaces ':' whitespaces '{' whitespaces '}' spaces NEWLINE
+    : whitespaces IDENTIFIER whitespaces ':' whitespaces '{' statebody '}' spaces NEWLINE
         {
-            $$ = $2;
+            $$ = { id: $2, body: $7 };
         }
     ;
 
 init_state_declaration
-    : whitespaces INIT whitespaces ':' whitespaces '{' whitespaces '}' spaces NEWLINE
+    : whitespaces INIT whitespaces ':' whitespaces '{' statebody '}' spaces NEWLINE
         {
-            $$ = $2;
+            $$ = { id: $2, body: $7 };
         }
     ;
 

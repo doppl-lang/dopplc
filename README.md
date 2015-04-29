@@ -12,7 +12,7 @@ Official compiler source code is stored in this repository.
 Run following commands in your terminal to generate the parser and compile the test source
 ```
 jison doppl_grammar.jison 
-node doppl_grammar.js test.doppl 
+node dopplc.js test.doppl 
 ```
 
 ##References
