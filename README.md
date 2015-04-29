@@ -9,7 +9,7 @@ Official compiler source code is stored in this repository.
 * [Jison](http://jison.org/)
 
 ##Test
-Run following commands in your terminal to generate the parser and print AST of `test.doppl` to your console
+Run following commands in your terminal to generate the parser and print AST of `test.doppl` to your console.
 ```
 jison doppl_grammar.jison 
 node dopplc.js test.doppl
