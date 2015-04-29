@@ -4,7 +4,19 @@ Doppl is a new programming language that aims to provide a natural syntax for im
 
 Official compiler source code is stored in this repository.
 
+##Dependencies
+* [Node.js](https://nodejs.org/)
+* [Jison](http://jison.org/)
+
+##Test
+Run following commands in your terminal to generate the parser and compile the test source
+```
+jison doppl_grammar.jison 
+node doppl_grammar.js test.doppl 
+```
+
 ##References
+* [Language Site](http://www.doppl.org)
 * [Presentation from CppNow 2014 conference](https://github.com/diegoperini/cppnow2014-doppl)
 
 ##Why GPLv2 as Licence?
