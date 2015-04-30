@@ -7,6 +7,9 @@
 \b"task"\b                      return 'TASK'
 \b"init"\b                      return 'INIT'
 
+\b"yield"\b                     return 'YIELD'
+\b"finish"\b                    return 'FINISH'
+
 \b"data"\b                      return 'DATA'
 \b"future"\b                    return 'FUTURE'
 \b"state"\b                     return 'STATE'
@@ -34,9 +37,9 @@
 ":"                             return ':'
 ","                             return ','
 
-[0-9]+\b                        return 'NUMBER_LITERAL'
+\b[0-9]+\b                      return 'NUMBER_LITERAL'
 \".*\"                          return 'STRING_LITERAL'
-[a-zA-Z]+[0-9a-zA-Z_]*\b        return 'IDENTIFIER'
+\b[a-zA-Z]+[0-9a-zA-Z_]*\b      return 'IDENTIFIER'
 
 "#".*\n                          /* ignore comments */
 [ \t]+                          return 'WHITESPACE'
