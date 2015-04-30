@@ -7,6 +7,20 @@
 \b"task"\b                      return 'TASK'
 \b"init"\b                      return 'INIT'
 
+\b"data"\b                      return 'DATA'
+\b"future"\b                    return 'FUTURE'
+\b"state"\b                     return 'STATE'
+\b"memory"\b                    return 'MEMORY'
+\b"element"\b                   return 'ELEMENT'
+
+\b"just"\b                      return 'JUST'
+\b"maybe"\b                     return 'MAYBE'
+\b"once"\b                      return 'ONCE'
+\b"sole"\b                      return 'SOLE'
+
+\b"private"\b                   return 'PRIVATE'
+\b"shared"\b                    return 'SHARED'
+
 \b"byte"\b                      return 'BYTE'
 \b"int"\b                       return 'INT'
 \b"float"\b                     return 'FLOAT'
@@ -110,9 +124,13 @@ statebody
     ;
 
 member_declaration
-    : whitespaces IDENTIFIER whitespaces '=' whitespaces type spaces NEWLINE
+    : whitespaces semantics IDENTIFIER whitespaces '=' whitespaces type spaces NEWLINE
         {
-            $$ = { id: $2, type: $6 };
+            $$ = { id: $3, type: $7 , semantics: $2};
+        }
+    | whitespaces IDENTIFIER whitespaces '=' whitespaces type spaces NEWLINE
+        {
+            $$ = { id: $2, type: $6 , semantics: { scope_semantic: 'private', monadic_semantic: 'just', action_semantic: 'data' } };
         }
     ;
 
@@ -128,6 +146,56 @@ init_state_declaration
         {
             $$ = { id: $2, body: $7 };
         }
+    ;
+
+semantics
+    : scopesemantic monadicsemantic actionsemantic
+        {
+            $$ = { scope_semantic: $1, monadic_semantic: $2, action_semantic: $3 };
+        }
+    | scopesemantic monadicsemantic
+        {
+            $$ = { scope_semantic: $1, monadic_semantic: $2, action_semantic: 'data' };
+        }
+    | scopesemantic actionsemantic
+        {
+            $$ = { scope_semantic: $1, monadic_semantic: 'just', action_semantic: $2 };
+        }
+    | scopesemantic 
+        {
+            $$ = { scope_semantic: $1, monadic_semantic: 'just', action_semantic: 'data' };
+        }
+    | monadicsemantic actionsemantic
+        {
+            $$ = { scope_semantic: 'private', monadic_semantic: $1, action_semantic: $2 };
+        }
+    | monadicsemantic 
+        {
+            $$ = { scope_semantic: 'private', monadic_semantic: $1, action_semantic: 'data' };
+        }
+    | actionsemantic
+        {
+            $$ = { scope_semantic: 'private', monadic_semantic: 'just', action_semantic: $1 };
+        }
+    ;
+
+actionsemantic
+    : DATA whitespaces
+    | FUTURE whitespaces
+    | STATE whitespaces
+    | MEMORY whitespaces
+    | ELEMENT whitespaces
+    ;
+
+monadicsemantic
+    : JUST whitespaces
+    | MAYBE whitespaces
+    | ONCE whitespaces
+    ;
+
+scopesemantic
+    : PRIVATE whitespaces
+    | SHARED whitespaces
     ;
 
 type

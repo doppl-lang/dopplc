@@ -7,15 +7,15 @@ task(12) myTask {
 
     }
 
-    a_byte = byte
+    shared data a_byte = byte
 
     init: {
-        another_byte = byte
+        maybe another_byte = byte
         internal_state: {
             very_internal_state: {
 
             }
-            a_float = float
+            once future a_float = float
         }
     }
 
@@ -23,6 +23,6 @@ task(12) myTask {
 
     }
      
-    a_string = string
+    state a_string = string
 
 }
