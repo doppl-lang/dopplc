@@ -18,13 +18,17 @@ task(12) myTask {
                 yield a_string
             }
             once future a_float : float
+            a_float = hello(asd:asd)
+            lol = {
+                finish
+            }
         }
     }
 
     another_state: {
         foo = bar  + lol
         foo = ( !bar + x == y - `(!foo) ) -> a_state
-        --> a_state
+        -> a_state(lol: !(x + y), asd: sd)
     }
      
     state another_string : string

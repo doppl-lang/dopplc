@@ -29,8 +29,6 @@
 \b"float"\b                     return 'FLOAT'
 \b"string"\b                    return 'STRING'
 
-L?\"(\\.|[^\\"])*\"             return 'STRING_LITERAL'
-
 "-->"                           return "-->"
 "->"                            return "->"
 
@@ -62,7 +60,10 @@ L?\"(\\.|[^\\"])*\"             return 'STRING_LITERAL'
 "{"                             return '{'
 "}"                             return '}'
 ":"                             return ':'
-","                             return ','
+","                             return /* ignore comma */
+"."                             return '.'
+
+L?\"(\\.|[^\\"])*\"             return 'STRING_LITERAL'
 
 \b[0-9]+\b                      return 'NUMBER_LITERAL'
 \b[a-zA-Z]+[0-9a-zA-Z_]*\b      return 'IDENTIFIER'
@@ -225,14 +226,34 @@ operations
     ;
 
 transition
-    : '->' IDENTIFIER
+    : '->' whitespaces IDENTIFIER
         {
-            $$ = { block: true , target: $2 }
+            $$ = { block: true , target: $2 , parameters: [] }
         }
-    | '-->' IDENTIFIER
+    | '->' whitespaces IDENTIFIER '(' parameters ')'
         {
-            $$ = { block: false , target: $2 }
+            $$ = { block: false , target: $2 , parameters: $4 }
         }
+    |'-->' whitespaces IDENTIFIER
+        {
+            $$ = { block: true , target: $2 , parameters: [] }
+        }
+    | '-->' whitespaces IDENTIFIER '(' parameters whitespaces ')'
+        {
+            $$ = { block: false , target: $2 , parameters: $4}
+        }
+    ;
+
+parameters
+    : parameters parameter
+        /* TODO */
+    | parameter
+        /* TODO */
+    ;
+
+parameter
+    : whitespaces IDENTIFIER whitespaces ':' operations
+        /* TODO */
     ;
 
 binary_operator
@@ -278,8 +299,26 @@ member_declaration
 state_declaration
     : whitespaces IDENTIFIER whitespaces ':' whitespaces '{' statebody '}' NEWLINE
         {
+            /* TODO */
             $$ = { id: $2, body: $7 };
         }
+    | whitespaces IDENTIFIER whitespaces '(' parameter_declarations whitespaces ')' whitespaces ':' whitespaces  '{' statebody '}' NEWLINE
+        {
+            /* TODO */
+            $$ = { id: $2, body: $7 };
+        }
+    ;
+
+parameter_declarations
+    : parameter_declarations parameter_declaration
+        /* TODO */
+    | parameter_declaration
+        /* TODO */
+    ;
+
+parameter_declaration
+    : whitespaces IDENTIFIER whitespaces ':' whitespaces type
+        /* TODO */
     ;
 
 init_state_declaration
@@ -341,7 +380,17 @@ scopesemantic
 
 value
     : IDENTIFIER
+        {
+            $$ = { id: $1 };
+        }
+    | IDENTIFIER '(' parameters whitespaces ')'
+        /* TODO */
+    | '{' statebody '}'
+        /* TODO */
     | NUMBER_LITERAL
+        {
+            $$ = { number: $1 }
+        }
     | STRING_LITERAL
         {
             var value = $1.substring(1, $1.length - 1);
@@ -356,7 +405,7 @@ value
             value = value.replace(/\\"/g, '"');
             value = value.replace(/\\/g, '\\');
 
-            $$ = value;
+            $$ = { string: value };
         }
     ;
 
