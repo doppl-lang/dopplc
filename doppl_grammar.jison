@@ -346,7 +346,15 @@ value
         {
             var value = $1.substring(1, $1.length - 1);
             
-            // TODO : get rid of unnecesary escapes
+            // Escapes
+            value = value.replace(/\\a/g, '\a');
+            value = value.replace(/\\b/g, '\b');
+            value = value.replace(/\\f/g, '\f');
+            value = value.replace(/\\n/g, '\n');
+            value = value.replace(/\\r/g, '\r');
+            value = value.replace(/\\t/g, '\t');
+            value = value.replace(/\\"/g, '"');
+            value = value.replace(/\\/g, '\\');
 
             $$ = value;
         }
