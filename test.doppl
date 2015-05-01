@@ -1,28 +1,29 @@
 task(12) myTask {
     #Line comment
 
-    an_int = int
+    an_int : int
 
     a_state: {
-
+        an_int : an_int
     }
 
-    shared data a_byte = byte
+    shared data a_byte : byte
 
     init: {
-        maybe another_byte = byte
+        maybe another_byte : byte
         internal_state: {
             very_internal_state: {
 
             }
-            once future a_float = float
+            once future a_float : float
         }
     }
 
     another_state: {
-
+        foo = bar  + lol
+        foo = ( !bar + x == y - `(!foo) )
     }
      
-    state a_string = string
+    state a_string : string
 
 }

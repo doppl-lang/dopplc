@@ -29,7 +29,29 @@
 \b"float"\b                     return 'FLOAT'
 \b"string"\b                    return 'STRING'
 
+"=="                            return '=='
+"<"                             return '<'
+">"                             return '>'
+"<="                            return '<='
+">="                            return '>='
 "="                             return '='
+"+"                             return '+'
+"-"                             return '-'
+"*"                             return '*'
+"/"                             return '/'
+"&"                             return '&'
+"|"                             return '|'
+"^"                             return '^'
+"++"                            return '++'
+\b"and"\b                       return 'AND'
+\b"nand"\b                      return 'NAND'
+\b"or"\b                        return 'OR'
+\b"nor"\b                       return 'NOR'
+\b"xor"\b                       return 'XOR'
+
+"!"                             return '!'
+"`"                             return '`'
+
 "("                             return '('
 ")"                             return ')'
 "{"                             return '{'
@@ -41,8 +63,8 @@
 \".*\"                          return 'STRING_LITERAL'
 \b[a-zA-Z]+[0-9a-zA-Z_]*\b      return 'IDENTIFIER'
 
-"#".*\n                          /* ignore comments */
-[ \t]+                          return 'WHITESPACE'
+"#".*\n                         /* ignore comments */
+[ \t]+                          /* ignroe whitespaces */
 \n                              return 'NEWLINE'
 <<EOF>>                         return 'EOF'
 .                               return 'INVALID'
@@ -51,7 +73,11 @@
 
 /* operator associations and precedence */
 
-%left 'ASSIGN'
+%left '='
+$left '+'
+$left '-'
+$left '*'
+$left '/'
 
 %start task
 
@@ -119,33 +145,122 @@ declarations
     ;
 
 statebody
-    : declarations whitespaces
+    : instructions whitespaces
+        {
+            $$ = { members: $1.members, states: $1.states, expressions: $1.expressions };
+        }
     | whitespaces
         {
-            $$ = { members: [], states: [] };
+            $$ = { members: [], states: [], expressions: [] };
         }
     ;
 
+instructions
+    : instructions state_declaration
+        {
+            $1.states.push($2)
+            $$ = { members: $1.members, states: $1.states, expressions: $1.expressions };
+        }
+    | instructions member_declaration
+        {
+            $1.members.push($2)
+            $$ = { members: $1.members, states: $1.states, expressions: $1.expressions };
+        }
+    | instructions expression
+        {
+            $1.expressions.push($2)
+            $$ = { members: $1.members, states: $1.states, expressions: $1.expressions };
+        }
+    | state_declaration
+        {
+            $$ = { members: [], states: [$1], expressions: [] };
+        }
+    | member_declaration
+        {
+            $$ = { members: [$1], states: [], expressions: [] };
+        }
+    | expression
+        {
+            $$ = { members: [], states: [], expressions: [$1] };
+        }
+    ;
+
+expression
+    : whitespaces IDENTIFIER '=' operations NEWLINE
+        {
+            $$ = { left: $2 , operation: $3 , right: $4 };
+        }
+    ;
+
+operations
+    : whitespaces IDENTIFIER
+        {
+            $$ = $2;
+        }
+    
+    | whitespaces IDENTIFIER binary_operator operations
+        {
+            $$ = { left: $2 , operation: $3 , right: $4 };
+        }
+    | whitespaces '(' operations whitespaces ')'
+        {
+            $$ = { group: $3 };
+        }
+    | whitespaces unary_operator operations
+        {
+            $$ = { operation: $2 , right: $3 };
+        }
+    ;
+
+binary_operator
+    : '+'
+    | '-'
+    | '*'
+    | '/'
+    | '='
+    | AND
+    | NAND
+    | OR
+    | NOR
+    | XOR
+    | '++'
+    | '<'
+    | '>'
+    | '<='
+    | '>='
+    | '=='
+    | '&'
+    | '|'
+    | '^'
+    ;
+
+unary_operator
+    : '!'
+    | '-'
+    | '`'
+    ;
+
+
 member_declaration
-    : whitespaces semantics IDENTIFIER whitespaces '=' whitespaces type spaces NEWLINE
+    : whitespaces semantics IDENTIFIER whitespaces ':' whitespaces type NEWLINE
         {
             $$ = { id: $3, type: $7 , semantics: $2};
         }
-    | whitespaces IDENTIFIER whitespaces '=' whitespaces type spaces NEWLINE
+    | whitespaces IDENTIFIER whitespaces ':' whitespaces type NEWLINE
         {
             $$ = { id: $2, type: $6 , semantics: { scope_semantic: 'private', monadic_semantic: 'just', action_semantic: 'data' } };
         }
     ;
 
 state_declaration
-    : whitespaces IDENTIFIER whitespaces ':' whitespaces '{' statebody '}' spaces NEWLINE
+    : whitespaces IDENTIFIER whitespaces ':' whitespaces '{' statebody '}' NEWLINE
         {
             $$ = { id: $2, body: $7 };
         }
     ;
 
 init_state_declaration
-    : whitespaces INIT whitespaces ':' whitespaces '{' statebody '}' spaces NEWLINE
+    : whitespaces INIT whitespaces ':' whitespaces '{' statebody '}' NEWLINE
         {
             $$ = { id: $2, body: $7 };
         }
@@ -209,18 +324,7 @@ type
     | IDENTIFIER
     ;
 
-newlines
-    : NEWLINE
-    | newlines NEWLINE
-    ;
-
-spaces  
-    : WHITESPACE
-    |
-    ;
-
 whitespaces
     : NEWLINE whitespaces
-    | WHITESPACE whitespaces
     |
     ;
