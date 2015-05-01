@@ -29,6 +29,12 @@
 \b"float"\b                     return 'FLOAT'
 \b"string"\b                    return 'STRING'
 
+L?\"(\\.|[^\\"])*\"             return 'STRING_LITERAL'
+
+"-->"                           return "-->"
+"->"                            return "->"
+
+"++"                            return '++'
 "=="                            return '=='
 "<"                             return '<'
 ">"                             return '>'
@@ -42,7 +48,6 @@
 "&"                             return '&'
 "|"                             return '|'
 "^"                             return '^'
-"++"                            return '++'
 \b"and"\b                       return 'AND'
 \b"nand"\b                      return 'NAND'
 \b"or"\b                        return 'OR'
@@ -60,7 +65,6 @@
 ","                             return ','
 
 \b[0-9]+\b                      return 'NUMBER_LITERAL'
-\".*\"                          return 'STRING_LITERAL'
 \b[a-zA-Z]+[0-9a-zA-Z_]*\b      return 'IDENTIFIER'
 
 "#".*\n                         /* ignore comments */
@@ -190,15 +194,23 @@ expression
         {
             $$ = { left: $2 , operation: $3 , right: $4 };
         }
+    | whitespaces IDENTIFIER '=' operations transition NEWLINE
+        {
+            $$ = { left: $2 , operation: $3 , right: $4 , transition: $5};
+        }
+    | whitespaces transition NEWLINE
+        {
+            $$ = { transition: $2 };
+        }
     ;
 
 operations
-    : whitespaces IDENTIFIER
+    : whitespaces value
         {
             $$ = $2;
         }
     
-    | whitespaces IDENTIFIER binary_operator operations
+    | whitespaces value binary_operator operations
         {
             $$ = { left: $2 , operation: $3 , right: $4 };
         }
@@ -209,6 +221,17 @@ operations
     | whitespaces unary_operator operations
         {
             $$ = { operation: $2 , right: $3 };
+        }
+    ;
+
+transition
+    : '->' IDENTIFIER
+        {
+            $$ = { block: true , target: $2 }
+        }
+    | '-->' IDENTIFIER
+        {
+            $$ = { block: false , target: $2 }
         }
     ;
 
@@ -314,6 +337,19 @@ monadicsemantic
 scopesemantic
     : PRIVATE whitespaces
     | SHARED whitespaces
+    ;
+
+value
+    : IDENTIFIER
+    | NUMBER_LITERAL
+    | STRING_LITERAL
+        {
+            var value = $1.substring(1, $1.length - 1);
+            
+            // TODO : get rid of unnecesary escapes
+
+            $$ = value;
+        }
     ;
 
 type

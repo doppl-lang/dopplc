@@ -13,6 +13,7 @@ task(12) myTask {
         maybe another_byte : byte
         internal_state: {
             very_internal_state: {
+                a_string = "Hello \"WORLD\" - escapes work \n"
 
             }
             once future a_float : float
@@ -21,9 +22,10 @@ task(12) myTask {
 
     another_state: {
         foo = bar  + lol
-        foo = ( !bar + x == y - `(!foo) )
+        foo = ( !bar + x == y - `(!foo) ) -> a_state
+        --> a_state
     }
      
-    state a_string : string
+    state another_string : string
 
 }
