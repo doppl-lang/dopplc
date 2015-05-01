@@ -5,6 +5,7 @@ task(12) myTask {
 
     a_state: {
         an_int : an_int
+        finish
     }
 
     shared data a_byte : byte
@@ -14,7 +15,7 @@ task(12) myTask {
         internal_state: {
             very_internal_state: {
                 a_string = "Hello \"WORLD\" - escapes work \n"
-
+                yield a_string
             }
             once future a_float : float
         }

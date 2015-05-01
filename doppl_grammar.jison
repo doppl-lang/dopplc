@@ -75,14 +75,6 @@ L?\"(\\.|[^\\"])*\"             return 'STRING_LITERAL'
 
 /lex
 
-/* operator associations and precedence */
-
-%left '='
-$left '+'
-$left '-'
-$left '*'
-$left '/'
-
 %start task
 
 %% /* language grammar */
@@ -201,6 +193,14 @@ expression
     | whitespaces transition NEWLINE
         {
             $$ = { transition: $2 };
+        }
+    | whitespaces YIELD operations NEWLINE
+        {
+            $$ = { operation: $2 , right: $3 };
+        }
+    | whitespaces FINISH NEWLINE
+        {
+            $$ = { operation: $2 };
         }
     ;
 
