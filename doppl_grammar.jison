@@ -228,32 +228,39 @@ operations
 transition
     : '->' whitespaces IDENTIFIER
         {
-            $$ = { block: true , target: $2 , parameters: [] }
+            $$ = { block: true , target: $3 , parameters: [] }
         }
     | '->' whitespaces IDENTIFIER '(' parameters ')'
         {
-            $$ = { block: false , target: $2 , parameters: $4 }
+            $$ = { block: false , target: $3 , parameters: $5 }
         }
     |'-->' whitespaces IDENTIFIER
         {
-            $$ = { block: true , target: $2 , parameters: [] }
+            $$ = { block: true , target: $3 , parameters: [] }
         }
     | '-->' whitespaces IDENTIFIER '(' parameters whitespaces ')'
         {
-            $$ = { block: false , target: $2 , parameters: $4}
+            $$ = { block: false , target: $3 , parameters: $5}
         }
     ;
 
 parameters
     : parameters parameter
-        /* TODO */
+        {
+            $1.application.push($1);
+            $$ = { application: $1.application };
+        }
     | parameter
-        /* TODO */
+        {
+            $$ = { application: [$1] };
+        }
     ;
 
 parameter
     : whitespaces IDENTIFIER whitespaces ':' operations
-        /* TODO */
+        {
+            $$ = { id: $2 , value: $5 };
+        }
     ;
 
 binary_operator
@@ -299,26 +306,35 @@ member_declaration
 state_declaration
     : whitespaces IDENTIFIER whitespaces ':' whitespaces '{' statebody '}' NEWLINE
         {
-            /* TODO */
-            $$ = { id: $2, body: $7 };
+            $$ = { id: $2, body: $7 , parameter_declarations: [] };
         }
-    | whitespaces IDENTIFIER whitespaces '(' parameter_declarations whitespaces ')' whitespaces ':' whitespaces  '{' statebody '}' NEWLINE
+    | whitespaces IDENTIFIER whitespaces ':' whitespaces '(' parameter_declarations whitespaces ')' whitespaces '{' statebody '}' NEWLINE
         {
-            /* TODO */
-            $$ = { id: $2, body: $7 };
+            $$ = { id: $2, body: $12, parameter_declarations: $7 };
         }
     ;
 
 parameter_declarations
     : parameter_declarations parameter_declaration
-        /* TODO */
+        {
+            $1.signature.push($1);
+            $$ = { signature: $1.signature };
+        }
     | parameter_declaration
-        /* TODO */
+        {
+            $$ = { signature: [$1] }
+        }
     ;
 
 parameter_declaration
-    : whitespaces IDENTIFIER whitespaces ':' whitespaces type
-        /* TODO */
+    : whitespaces semantics IDENTIFIER whitespaces ':' whitespaces type
+        {
+            $$ = { id: $3, type: $7, semantics: $2 };
+        }
+    | whitespaces IDENTIFIER whitespaces ':' whitespaces type
+        {
+            $$ = { id: $2, type: $6 };
+        }
     ;
 
 init_state_declaration
@@ -384,12 +400,20 @@ value
             $$ = { id: $1 };
         }
     | IDENTIFIER '(' parameters whitespaces ')'
-        /* TODO */
-    | '{' statebody '}'
-        /* TODO */
+        {
+            $$ = { id: $1, parameters: $3 };
+        }
+    | ':' whitespaces '{' statebody '}'
+        {
+            $$ = { id: null, body: $4, parameter_declarations: [] };
+        }
+    | ':' whitespaces '(' parameter_declarations whitespaces ')' '{' statebody '}'
+        {
+            $$ = { id: null, body: $8, parameter_declarations: $4 };
+        }
     | NUMBER_LITERAL
         {
-            $$ = { number: $1 }
+            $$ = { number: $1 };
         }
     | STRING_LITERAL
         {
