@@ -25,6 +25,7 @@
 \b"shared"\b                    return 'SHARED'
 
 \b"byte"\b                      return 'BYTE'
+\b"bool"\b                      return 'BOOL'
 \b"int"\b                       return 'INT'
 \b"float"\b                     return 'FLOAT'
 \b"string"\b                    return 'STRING'
@@ -64,11 +65,11 @@
 "."                             return '.'
 
 L?\"(\\.|[^\\"])*\"             return 'STRING_LITERAL'
-
+(\b"true"\b)|(\b"false"\b)      return 'BOOL_LITERAL'
 \b[0-9]+\b                      return 'NUMBER_LITERAL'
 \b[a-zA-Z]+[0-9a-zA-Z_]*\b      return 'IDENTIFIER'
 
-"#".*\n                         /* ignore comments */
+"#".*\n                         return 'NEWLINE' /* ignore comments */
 [ \t]+                          /* ignroe whitespaces */
 \n                              return 'NEWLINE'
 <<EOF>>                         return 'EOF'
@@ -226,22 +227,27 @@ operations
     ;
 
 transition
-    : '->' whitespaces IDENTIFIER
+    : '->' whitespaces state_id
         {
             $$ = { block: true , target: $3 , parameters: [] }
         }
-    | '->' whitespaces IDENTIFIER '(' parameters ')'
+    | '->' whitespaces state_id '(' parameters ')'
         {
             $$ = { block: false , target: $3 , parameters: $5 }
         }
-    |'-->' whitespaces IDENTIFIER
+    |'-->' whitespaces state_id
         {
             $$ = { block: true , target: $3 , parameters: [] }
         }
-    | '-->' whitespaces IDENTIFIER '(' parameters whitespaces ')'
+    | '-->' whitespaces state_id '(' parameters whitespaces ')'
         {
             $$ = { block: false , target: $3 , parameters: $5}
         }
+    ;
+
+state_id
+    : IDENTIFIER
+    | INIT
     ;
 
 parameters
@@ -411,9 +417,17 @@ value
         {
             $$ = { id: null, body: $8, parameter_declarations: $4 };
         }
+    | INIT
+        {
+            $$ = { id: $1 };
+        }
     | NUMBER_LITERAL
         {
             $$ = { number: $1 };
+        }
+    | BOOL_LITERAL
+        {
+            $$ = { bool: $1 };
         }
     | STRING_LITERAL
         {
@@ -438,6 +452,7 @@ type
     | INT
     | FLOAT
     | STRING
+    | BOOL
     | IDENTIFIER
     ;
 

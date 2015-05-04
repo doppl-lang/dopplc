@@ -1,36 +1,34 @@
-task(12) myTask {
-    #Line comment
+task(4) myTask {
+    shared a_shared_data : string           #a single, shared string owned by all threads of myTask
+    shared once a_shared_once_data : bool   #a single, shared once boolean for conditional branching
 
-    an_int : int
+    
+    init: {                                 #init state (myTask starts running here)
+        a_shared_once_data = 
+            true -> a_state                 #will only be executed and branch once although myTask runs on many threads
+                                            #will wait other threads to finish before branch due to '->'
+        finish                              #finish is non-blocking
+    }
 
     a_state: {
-        an_int : an_int
-        finish
+        a_shared_data = "Hello " ++         #string concatenation
+                another_state(value: "World!")
+        -->finalize                         #won't wait other threads to branch due to '-->'
     }
 
-    shared data a_byte : byte
+    another_state: (value: string) {        #a state with a parameter
+        maybe message: string               #an internal nullable member for another_state (initally null)
 
-    init: {
-        maybe another_byte : byte
-        internal_state: {
-            very_internal_state: {
-                a_string = "Hello \"WORLD\" - escapes work \n"
-                yield a_string
-            }
-            once future a_float : float
-            a_float = hello(asd:asd)
-            lol = {
-                finish
-            }
+        message = :{                        #a closure
+            yield value                     #states become values when executed or branched
         }
+
+        yield message
     }
 
-    another_state: {
-        foo = bar  + lol
-        foo = ( !bar + x == y - `(!foo) ) -> a_state
-        -> a_state(lol: !(x + y), asd: sd)
+    finalize: {
+        output = a_shared_data              #message is printed to console
+        finish                              #end of our task
     }
-     
-    state another_string : string
 
 }
