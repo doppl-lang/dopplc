@@ -186,11 +186,11 @@ instructions
 expression
     : whitespaces IDENTIFIER '=' operations NEWLINE
         {
-            $$ = { left: $2 , operation: $3 , right: $4 };
+            $$ = { left: { id: $2 } , operation: $3 , right: $4 };
         }
     | whitespaces IDENTIFIER '=' operations transition NEWLINE
         {
-            $$ = { left: $2 , operation: $3 , right: $4 , transition: $5};
+            $$ = { left: { id: $2 } , operation: $3 , right: $4 , transition: $5};
         }
     | whitespaces transition NEWLINE
         {
