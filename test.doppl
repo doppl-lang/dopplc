@@ -19,7 +19,7 @@ task(4) myTask {
     another_state: (value: string) {        #a state with a parameter
         maybe message: string               #an internal nullable member for another_state (initally null)
 
-        message = :{                        #a closure
+        message = :{                        #a closure (anonymouse state)
             yield value                     #states become values when executed or branched
         }
 
