@@ -1,7 +1,6 @@
 task(4) myTask {
     shared a_shared_data : string           #a single, shared string owned by all threads of myTask (4 threads)
     shared once a_shared_once_data : bool   #a single, shared once boolean for conditional branching
-
     
     init: {                                 #init state (myTask starts running here)
         a_shared_once_data = 
@@ -30,5 +29,4 @@ task(4) myTask {
         output = a_shared_data              #message is printed to console
         finish                              #end of our task
     }
-
 }
