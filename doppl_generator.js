@@ -79,7 +79,7 @@ function solveState(state) {
 
             switch (expression.operation) {
                 case 'yield':
-                    result = solveYield(expression, state);
+                    result = solveYield(expression);
                     break;
                 case 'transition':
                     result = solveState(expression.transition);
@@ -96,6 +96,9 @@ function solveState(state) {
     } else {
         result = typeOfSymbol(state.id);
     }
+
+    // TODO : compare all yield types
+    
     state.type = result;
 }
 
