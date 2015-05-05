@@ -85,6 +85,12 @@ task
     : taskheader '{' taskbody '}' whitespaces EOF
         { 
             $$ = { header: $1, body: $3 }; 
+
+            for(var i = 0; i < $$.body.states.length; i++) {
+                $$.body.states[i].body.parent = $$.body;
+            }
+            $$.body.init_state.body.parent = $$.body;
+
             require('./ast').provide($$);
         }
     ;
@@ -146,6 +152,10 @@ statebody
     : instructions whitespaces
         {
             $$ = { members: $1.members, states: $1.states, expressions: $1.expressions };
+            for(var i = 0; i < $$.expressions.length; i++) {
+                if($$.expressions[i].left) $$.expressions[i].left.parent = $$;
+                if($$.expressions[i].left) $$.expressions[i].right.parent = $$;
+            }
         }
     | whitespaces
         {
@@ -194,7 +204,7 @@ expression
         }
     | whitespaces transition NEWLINE
         {
-            $$ = { transition: $2 };
+            $$ = { operation: 'transition', transition: $2 };
         }
     | whitespaces YIELD operations NEWLINE
         {
@@ -215,6 +225,8 @@ operations
     | whitespaces value binary_operator operations
         {
             $$ = { left: $2 , operation: $3 , right: $4 };
+            $$.left.parent = $$;
+            $$.right.parent = $$;
         }
     | whitespaces '(' operations whitespaces ')'
         {
@@ -223,25 +235,26 @@ operations
     | whitespaces unary_operator operations
         {
             $$ = { operation: $2 , right: $3 };
+            $$.right.parent = $$;
         }
     ;
 
 transition
     : '->' whitespaces state_id
         {
-            $$ = { block: true , target: $3 , parameters: [] }
+            $$ = { block: true , id: $3 , parameters: [] }
         }
     | '->' whitespaces state_id '(' parameters ')'
         {
-            $$ = { block: false , target: $3 , parameters: $5 }
+            $$ = { block: false , id: $3 , parameters: $5 }
         }
     |'-->' whitespaces state_id
         {
-            $$ = { block: true , target: $3 , parameters: [] }
+            $$ = { block: true , id: $3 , parameters: [] }
         }
     | '-->' whitespaces state_id '(' parameters whitespaces ')'
         {
-            $$ = { block: false , target: $3 , parameters: $5}
+            $$ = { block: false , id: $3 , parameters: $5}
         }
     ;
 

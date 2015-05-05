@@ -1,4 +1,5 @@
 var parser = require("./doppl_grammar").parser;
+var generator = require('./doppl_generator');
 var cli = require('commander');
 var fs = require('fs');
 var util = require('util');
@@ -17,7 +18,19 @@ if (!cli.args.length) {
     var dopplSource = fs.readFileSync(cli.args[0], "utf8");
     if(parser.parse(dopplSource)) {
         var ast = require('./ast').ast;
+
+        console.log('AST**************************\n');
         console.log(util.inspect(ast, {showHidden: false, depth: null}));
-        // TODO : generate C++
+        console.log('');
+        console.log('CPP**************************\n');
+
+        var cpp = generator.generate(ast);
+        if(cpp.error) console.log("Compile error.");
+        else {
+          console.log(cpp.output);
+          console.log("Successfully compiled.");
+        }
+
+        // TODO : write cpp to a file
     }
 }

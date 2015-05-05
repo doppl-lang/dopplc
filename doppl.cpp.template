@@ -1,0 +1,115 @@
+#include "lib/doppl.hpp"
+
+using namespace doppl;
+using std::string;
+using byte = unsigned char;
+
+int {{ header.id }}() {
+    const int range = {{ header.range }};
+
+    //Stdin and stdout
+    input_t input;
+    output_t output;
+
+    //Data oriented private task members
+    {{#private_members}}
+    std::array<
+        {{ semantics.action_semantic }}<{{ type }}>,
+        {{ header.range }}
+    > _{{ id }};
+    {{/private_members}}
+
+    //Shared task members
+    {{#shared_members}}
+    shared<{{ semantics.action_semantic }}<{{ type }}>> {{ id }};
+    {{/shared_members}}
+
+    //Task body
+    auto task_body = [&] (
+                //Task id
+                const int tid
+            ) -> int {    
+        //Doppl runtime loop
+        std::promise<void> global_yield;
+        task_loop<void> loop;
+
+        //Private Members
+        {{#private_members}}
+        decltype(_{{ id }}[tid])& {{ id }} = _{{ id }}[tid];
+        {{/private_members}}
+        
+        //States
+        {{#states}}
+            {{ semantics.action_semantic }}<void> {{ id }};
+        {{/states}}
+        SM<void> init;
+        SM<void> bar;
+        SM<void, FM<int>> tar;
+
+        init.set([&] (auto& yield, auto& next, auto& finish) {
+            output.set("Init State Works\n");
+
+            //Data Members test
+            foo.set(42);
+            assert(foo.get() == 42);
+
+            output.set("Data Members Work\n");
+            
+            //State Transition Test
+            next.set(bar);
+        });
+          
+        bar.set([&] (auto& yield, auto& next, auto& finish) {
+            output.set("State Transition Works\n");
+
+            //Internal State Declarations Test
+            SM<int> temp([&] (auto& yield, auto& next, auto& finish) { 
+                SM<int> clone([&output] (auto& yield, auto& next, auto& finish) {
+                    output.set("Transition in Cloned Tasks Works\n");
+                    next.set(finish);
+                    yield.set_value(99);
+                }); 
+                output.set("Internal State Declerations Work\n");
+
+                //Transition in Cloned Tasks test
+                next.set(clone);
+            });
+
+            //Future Members test
+            zee.set(temp, false);
+            assert(zee.get() == 99);
+
+            output.set("Future Members Work\n");
+
+            //Parametered Transition test
+            next.set(tar, zee);
+        });
+
+        tar.set([&] (auto& yield, auto& next, auto& finish, auto param) {
+            assert(param.get() == 99);
+
+            output.set("Parameterized Transition Works\n");
+
+            //Shared Members test
+            sha.set(foo);
+            assert(sha.get() == 42);
+
+            output.set("Shared Members Work\n");
+            
+            next.set(finish);
+        });
+
+        return loop(init, global_yield);
+    };
+
+    //Return
+    return doppl_run<range>(task_body);
+};
+
+//Start runtime
+int main() {
+    std::cout << std::endl << "********Doppl Runtime Test" << std::endl << std::endl;
+    assert({{ header.id }}() == 0);
+    std::cout << std::endl << "********Doppl Runtime Test Success" << std::endl;
+    return 0;
+};
