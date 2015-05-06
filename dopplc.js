@@ -22,15 +22,21 @@ if (!cli.args.length) {
         console.log('AST**************************\n');
         console.log(util.inspect(ast, {showHidden: false, depth: null}));
         console.log('');
-        console.log('CPP**************************\n');
-
+        console.log('AST-Analyzed**************************\n');
+        
         var cpp = generator.generate(ast);
+
+        console.log('');
+        console.log(util.inspect(ast, {showHidden: false, depth: null}));
+        console.log('');
+        console.log('CPP***********************************\n');
+
         if(cpp.error) console.log("Compile error.");
         else {
-          console.log(cpp.output);
+          //console.log(cpp.output);
           console.log("Successfully compiled.");
         }
-
+        
         // TODO : write cpp to a file
     }
 }

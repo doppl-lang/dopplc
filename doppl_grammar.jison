@@ -56,6 +56,15 @@
 "!"                             return '!'
 "`"                             return '`'
 
+L?\"(\\.|[^\\"])*\"             return 'STRING_LITERAL'
+(\b"true"\b)|(\b"false"\b)      return 'BOOL_LITERAL'
+\b[0-9]*\.[0-9]+\b              return 'NUMBER_LITERAL'
+\b[0-9]+\b                      return 'NUMBER_LITERAL'
+\b0x[0-9a-fA-F]+\b              return 'NUMBER_LITERAL'
+\b0o[0-7]+\b                    return 'NUMBER_LITERAL'
+\b0b[01]+\b                     return 'NUMBER_LITERAL'
+\b[a-zA-Z]+[0-9a-zA-Z_]*\b      return 'IDENTIFIER'
+
 "("                             return '('
 ")"                             return ')'
 "{"                             return '{'
@@ -64,13 +73,8 @@
 ","                             return /* ignore comma */
 "."                             return '.'
 
-L?\"(\\.|[^\\"])*\"             return 'STRING_LITERAL'
-(\b"true"\b)|(\b"false"\b)      return 'BOOL_LITERAL'
-\b[0-9]+\b                      return 'NUMBER_LITERAL'
-\b[a-zA-Z]+[0-9a-zA-Z_]*\b      return 'IDENTIFIER'
-
 "#".*\n                         return 'NEWLINE' /* ignore comments */
-[ \t]+                          /* ignroe whitespaces */
+[ \t]+                          /* ignore whitespaces */
 \n                              return 'NEWLINE'
 <<EOF>>                         return 'EOF'
 .                               return 'INVALID'
@@ -84,7 +88,8 @@ L?\"(\\.|[^\\"])*\"             return 'STRING_LITERAL'
 task
     : taskheader '{' taskbody '}' whitespaces EOF
         { 
-            $$ = { header: $1, body: $3 }; 
+            $$ = { header: $1, body: $3 };
+            $$.body.id = $$.header.id;
 
             for(var i = 0; i < $$.body.states.length; i++) {
                 $$.body.states[i].body.parent = $$.body;
@@ -154,7 +159,11 @@ statebody
             $$ = { members: $1.members, states: $1.states, expressions: $1.expressions };
             for(var i = 0; i < $$.expressions.length; i++) {
                 if($$.expressions[i].left) $$.expressions[i].left.parent = $$;
-                if($$.expressions[i].left) $$.expressions[i].right.parent = $$;
+                if($$.expressions[i].right) {
+                    $$.expressions[i].right.parent = $$;
+                    if($$.expressions[i].right.body) $$.expressions[i].right.body.parent = $$;
+                }
+                if($$.expressions[i].transition) $$.expressions[i].transition.parent = $$;
             }
         }
     | whitespaces
@@ -231,6 +240,7 @@ operations
     | whitespaces '(' operations whitespaces ')'
         {
             $$ = { group: $3 };
+            $$.group.parent = $$;
         }
     | whitespaces unary_operator operations
         {
@@ -325,11 +335,15 @@ member_declaration
 state_declaration
     : whitespaces IDENTIFIER whitespaces ':' whitespaces '{' statebody '}' NEWLINE
         {
-            $$ = { id: $2, body: $7 , parameter_declarations: [] };
+            $$ = { id: $2, body: $7 , parameter_declarations: { signature:[] } };
+            $$.body.id = $$.id;
+            $$.body.parameter_declarations = $$.parameter_declarations;
         }
     | whitespaces IDENTIFIER whitespaces ':' whitespaces '(' parameter_declarations whitespaces ')' whitespaces '{' statebody '}' NEWLINE
         {
             $$ = { id: $2, body: $12, parameter_declarations: $7 };
+            $$.body.id = $$.id;
+            $$.body.parameter_declarations = $$.parameter_declarations;
         }
     ;
 
@@ -352,7 +366,7 @@ parameter_declaration
         }
     | whitespaces IDENTIFIER whitespaces ':' whitespaces type
         {
-            $$ = { id: $2, type: $6 };
+            $$ = { id: $2, type: $6, semantics: { scope_semantic: 'private', monadic_semantic: 'just', action_semantic: 'data' } };
         }
     ;
 
@@ -424,11 +438,33 @@ value
         }
     | ':' whitespaces '{' statebody '}'
         {
-            $$ = { id: null, body: $4, parameter_declarations: [] };
+            function makeid() {
+                var text = "";
+                var possible = "abcdefghijklmnopqrstuvwxyz";
+
+                for( var i=0; i < 11; i++ )
+                    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+                return 'ANON_'+ text;
+            }
+
+            $$ = { id: makeid(), body: $4, parameter_declarations: [] };
+            $$.body.id = $$.id;
         }
     | ':' whitespaces '(' parameter_declarations whitespaces ')' '{' statebody '}'
         {
-            $$ = { id: null, body: $8, parameter_declarations: $4 };
+            function makeid() {
+                var text = "";
+                var possible = "abcdefghijklmnopqrstuvwxyz";
+
+                for( var i=0; i < 11; i++ )
+                    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+                return 'ANON_'+ text;
+            }
+
+            $$ = { id: makeid(), body: $8, parameter_declarations: $4 };
+            $$.body.id = $$.id;
         }
     | INIT
         {

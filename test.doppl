@@ -10,8 +10,8 @@ task(4) myTask {
     }
 
     a_state: {
-        a_shared_data = "Hello " ++         #string concatenation
-                another_state(value: "World!")
+        a_shared_data = ("Hello " ++         #string concatenation
+                another_state(value: "World!"))
         -->finalize                         #won't wait other threads to branch due to '-->'
     }
 
