@@ -3,7 +3,6 @@ var fs = require('fs');
 var util = require('util');
 
 var ast; //Dictionary of abstract syntax tree (initialized after parse)
-var sym = {}; //Dictionary of symbols
 var compileSuccess = true;
 
 function setGlobalAst(newAst) {
