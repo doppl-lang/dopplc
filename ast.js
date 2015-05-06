@@ -6,7 +6,7 @@ module.exports = {
             id: 'input',
             type: 'string',
             semantics: {
-                scope_semantic: 'shared',
+                scope_semantic: 'static',
                 monadic_semantic: 'just',
                 action_semantic: 'state'
             }
@@ -15,7 +15,7 @@ module.exports = {
             id: 'output',
             type: 'string',
             semantics: {
-                scope_semantic: 'shared',
+                scope_semantic: 'static',
                 monadic_semantic: 'just',
                 action_semantic: 'future'
             }
