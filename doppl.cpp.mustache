@@ -40,7 +40,7 @@ int {{ header.id }}() {
         
         //States
         {{#states}}
-            {{ semantics.action_semantic }}<{{ type }}> {{ id }};
+        {{ semantics.action_semantic }}<{{ state_type }}> {{ id }};
         {{/states}}
         SM<void> init;
         SM<void> bar;

@@ -179,6 +179,18 @@ function solveState(state) {
 
     var result;
     if (state.body) {
+        if (state.semantics) {
+            if (state.semantics.action_semantic === 'data') {
+                state.semantics.action_semantic = 'DM';
+            }
+            if (state.semantics.action_semantic === 'future') {
+                state.semantics.action_semantic = 'FM';
+            }
+            if (state.semantics.action_semantic === 'state') {
+                state.semantics.action_semantic = 'SM';
+            }
+        }
+
         state.body.expressions.forEach(function(expression) {
             switch (expression.operation) {
                 case 'yield':
@@ -218,6 +230,8 @@ function solveState(state) {
         } else {
             result = 'void';
         }
+
+        // TODO : pack parameter declarations 
     } else {
         result = typeOfSymbol(state, state);
         if (result === undefined) {
@@ -245,6 +259,9 @@ module.exports = {
         view.shared_members = ast.body.members.filter(function(member) {
             return member.semantics.scope_semantic === 'shared';
         });
+
+
+        view.states = ast.body.states;
 
         solveState(ast.body.init_state);
         //ast.body.states.forEach(solveState);

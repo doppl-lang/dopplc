@@ -335,13 +335,13 @@ member_declaration
 state_declaration
     : whitespaces IDENTIFIER whitespaces ':' whitespaces '{' statebody '}' NEWLINE
         {
-            $$ = { id: $2, body: $7 , parameter_declarations: { signature:[] } };
+            $$ = { id: $2, body: $7 , parameter_declarations: { signature:[] } , semantics: { scope_semantic: 'static', monadic_semantic: 'just', action_semantic: 'state' } };
             $$.body.id = $$.id;
             $$.body.parameter_declarations = $$.parameter_declarations;
         }
     | whitespaces IDENTIFIER whitespaces ':' whitespaces '(' parameter_declarations whitespaces ')' whitespaces '{' statebody '}' NEWLINE
         {
-            $$ = { id: $2, body: $12, parameter_declarations: $7 };
+            $$ = { id: $2, body: $12, parameter_declarations: $7 , semantics: { scope_semantic: 'static', monadic_semantic: 'just', action_semantic: 'state' }};
             $$.body.id = $$.id;
             $$.body.parameter_declarations = $$.parameter_declarations;
         }

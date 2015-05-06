@@ -33,7 +33,7 @@ if (!cli.args.length) {
 
         if(cpp.error) console.log("Compile error.");
         else {
-          //console.log(cpp.output);
+          console.log(cpp.output);
           console.log("Successfully compiled.");
         }
         
