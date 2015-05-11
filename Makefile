@@ -1,6 +1,6 @@
 CXX=clang++ 
 CXXFLAGS=-stdlib=libc++ -std=c++1y -pthread
-BIN=doppl
+BIN=doppl_main
 
 SRC=$(wildcard *.cpp)
 OBJ=$(SRC:%.cpp=%.o)
