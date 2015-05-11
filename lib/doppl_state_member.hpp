@@ -56,11 +56,17 @@ namespace doppl {
             return *this;
         };
 
+        //state = state
         SM<T>& set(SM<T>& input) {
             this->_state = input._state;
             return *this;
-        };        
+        };       
 
+        // TODO : below
+        // state = data
+        // state = future 
+
+        //state = value
         SM<T>& set(decltype(_state) input) {
             _state = input;
             return *this;

@@ -63,7 +63,7 @@ L?\"(\\.|[^\\"])*\"             return 'STRING_LITERAL'
 \b0x[0-9a-fA-F]+\b              return 'NUMBER_LITERAL'
 \b0o[0-7]+\b                    return 'NUMBER_LITERAL'
 \b0b[01]+\b                     return 'NUMBER_LITERAL'
-\b[a-zA-Z]+[0-9a-zA-Z_]*\b      return 'IDENTIFIER'
+\b[a-zA-Z_]+[0-9a-zA-Z_]*\b      return 'IDENTIFIER'
 
 "("                             return '('
 ")"                             return ')'
@@ -350,7 +350,7 @@ state_declaration
 parameter_declarations
     : parameter_declarations parameter_declaration
         {
-            $1.signature.push($1);
+            $1.signature.push($2);
             $$ = { signature: $1.signature };
         }
     | parameter_declaration
@@ -497,6 +497,22 @@ value
     ;
 
 type
+    : value_type
+    | value_type '(' parameter_declarations whitespaces ')'
+    {
+        var pack = function(list) {
+            var result = '';
+            console.log(list);
+            for(var i = 0; i < list.length; i++) {
+                result += ', SM<' + list[i].type + '>'
+            }
+            return result;
+        };
+        $$ = $1 + pack($3.signature);
+    }
+    ;
+
+value_type
     : BYTE
     | INT
     | FLOAT

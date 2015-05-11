@@ -23,9 +23,9 @@ namespace doppl {
 
         //future = data
         FM<T>& set(DM<T>& input) {
-            std::promise<T> p;
-            _future = p.get_future();
-            p.set_value(input.get());
+            _promise = std::promise<T>();
+            _future = _promise.get_future();
+            _promise.set_value(input.get());
             return *this;
         };
 

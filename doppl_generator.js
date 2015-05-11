@@ -32,8 +32,6 @@ function solveNumber(instruction) {
 }
 
 function typeOfSymbol(symbol, cursor, scope) {
-    // TODO : crawl parents to decide type, 
-    //        if not found add symbol to symbol table and solve if necessary
     console.log("Checking symbol:    " + symbol.id);
 
     if (!cursor) {
@@ -75,8 +73,34 @@ function typeOfSymbol(symbol, cursor, scope) {
         //Check states
         for (i = 0; i < cursor.states.length; i++) {
             if (cursor.states[i].id === symbol.id) {
-                // TODO : compare symbol.application with cursor.states[i].parameter_declarations
                 symbol.type = solveState(cursor.states[i]);
+                if (symbol.parameters) {
+                    if (symbol.parameters.application) {
+                        var type = symbol.type.split(', ');
+
+                        for (var j = 0; j < symbol.parameters.application.length; j++) {
+                            var key = symbol.parameters.application[j].id;
+
+                            if (cursor.states[i].parameter_declarations) {
+                                if (cursor.states[i].parameter_declarations.signature) {
+                                    for (var k = 0; k < cursor.states[i].parameter_declarations.signature.length; k++) {
+                                        if(cursor.states[i].parameter_declarations.signature[k].id === key) {
+                                            if(type[k+1]) {
+                                                type[k+1] = '';
+                                            }
+                                        }
+                                    }
+                                } 
+                            } 
+                        }
+
+                        var appliedType = [];
+                        for(j = 0; j < type.length; j++) {
+                            if(type[j] !== '') appliedType.push(type[j]);
+                        }
+                        symbol.type = appliedType.join(', ');
+                    }
+                }
                 found = true;
                 return symbol.type;
             }
@@ -231,7 +255,14 @@ function solveState(state) {
             result = 'void';
         }
 
-        // TODO : pack parameter declarations 
+        if (state.parameter_declarations) {
+            if (state.parameter_declarations.signature) {
+                for (var j = 0; j < state.parameter_declarations.signature.length; j++) {
+                    result += ', SM<' + state.parameter_declarations.signature[j].type + '>';
+                }
+            }
+        }
+
     } else {
         result = typeOfSymbol(state, state);
         if (result === undefined) {
