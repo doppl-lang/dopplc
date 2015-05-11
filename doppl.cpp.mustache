@@ -4,12 +4,12 @@ using namespace doppl;
 using std::string;
 using byte = unsigned char;
 
+//Stdin and stdout
+static input_t input;
+static output_t output;
+
 int {{ header.id }}() {
     const int range = {{ header.range }};
-
-    //Stdin and stdout
-    input_t input;
-    output_t output;
 
     //Data oriented private task members
     {{#private_members}}
@@ -60,8 +60,8 @@ int {{ header.id }}() {
             output.set("State Transition Works\n");
 
             //Internal State Declarations Test
-            SM<int> temp([&] (auto& yield, auto& next, auto& finish) { 
-                SM<int> clone([&output] (auto& yield, auto& next, auto& finish) {
+            SM<int> temp([=] (auto& yield, auto& next, auto& finish) { 
+                SM<int> clone([=] (auto& yield, auto& next, auto& finish) {
                     output.set("Transition in Cloned Tasks Works\n");
                     next.set(finish);
                     yield.set_value(99);
