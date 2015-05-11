@@ -373,7 +373,7 @@ parameter_declaration
 init_state_declaration
     : whitespaces INIT whitespaces ':' whitespaces '{' statebody '}' NEWLINE
         {
-            $$ = { id: $2, body: $7 };
+            $$ = { id: $2, body: $7, semantics: { scope_semantic: 'static', monadic_semantic: 'just', action_semantic: 'state' } };
         }
     ;
 

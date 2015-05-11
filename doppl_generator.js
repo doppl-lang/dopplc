@@ -291,10 +291,10 @@ module.exports = {
             return member.semantics.scope_semantic === 'shared';
         });
 
+        solveState(ast.body.init_state);
 
         view.states = ast.body.states;
-
-        solveState(ast.body.init_state);
+        view.states.push(ast.body.init_state);
         //ast.body.states.forEach(solveState);
 
         var output = mustache.render(fs.readFileSync("doppl.cpp.mustache", "utf8"), view);
