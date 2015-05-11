@@ -272,6 +272,8 @@ function solveState(state) {
     }
 
     state.type = result;
+
+    if(state.id.substring(0,4) === 'ANON') state.parent.states.push(state);
     return result;
 }
 
