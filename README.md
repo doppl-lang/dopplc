@@ -5,6 +5,7 @@ Doppl is a new programming language that aims to provide a natural syntax for im
 Official compiler source code is stored in this repository.
 
 ##Dependencies
+* [Clang](http://clang.llvm.org/get_started.html)
 * [Node.js](https://nodejs.org/)
 * [Coffeescript](http://coffeescript.org/)
 * [Jison](http://jison.org/)
