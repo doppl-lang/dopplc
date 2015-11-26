@@ -48,6 +48,7 @@ int {{ header.id }}() {
             {{{state_bodie}}}
         {{/states}}
 
+        /*
         init.set([&] (auto& yield, auto& next, auto& finish) {
             output.set("Init State Works\n");
 
@@ -100,6 +101,7 @@ int {{ header.id }}() {
             
             next.set(finish);
         });
+        */
 
         return loop(init, global_yield);
     };

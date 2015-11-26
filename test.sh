@@ -9,8 +9,13 @@ cp state_bodies.mustache ../bin/state_bodies.mustache
 cd ..
 npm i
 cd bin
-node dopplc.js ../$1
+node dopplc.js ../$1 ../doppl_main
 cd ..
 rm -rf node_modules
 rm -rf bin
+make clean
+make
+./doppl_main
+rm ./doppl_main.cpp
+make clean
 

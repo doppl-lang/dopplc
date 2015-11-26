@@ -10,13 +10,13 @@ task(4) myTask {
     }
 
     a_state: {
-        a_shared_data = ("Hello " ++         #string concatenation
+        a_shared_data = ("Hello " ++        #string concatenation
                 another_state(value: "World!"))
         -->finalize                         #won't wait other threads to branch due to '-->'
     }
 
     another_state: (value: string) {        #a state with a parameter
-        maybe message: string               #an internal nullable member for another_state (initally null)
+        message: string                     #an internal nullable member for another_state (initally null)
 
         message = :{                        #a closure (anonymouse state)
             yield value                     #states become values when executed or branched

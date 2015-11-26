@@ -3,12 +3,17 @@ generator = require './doppl_generator'
 cli = require 'commander'
 fs = require 'fs'
 util = require 'util'
-cli.version('0.0.1').usage('<file>').parse process.argv
+cli.version('0.0.1').usage('<file> <output>').parse process.argv
 
-if !cli.args.length
+if !cli.args.length?
   console.log cli.args
   console.log 'dopplc:'
   console.log 'Error: No input file'
+  console.log 'Manual: node dopplc.js --help'
+else if cli.args.length is 1
+  console.log cli.args
+  console.log 'dopplc:'
+  console.log 'Error: No output file'
   console.log 'Manual: node dopplc.js --help'
 else
   dopplSource = fs.readFileSync(cli.args[0], 'utf8')
@@ -32,4 +37,5 @@ else
     else
       console.log cpp.output
       console.log 'Successfully compiled.'
+      fs.writeFile cli.args[1]+'.cpp', cpp.output, () -> return
     # TODO : write cpp to a file
