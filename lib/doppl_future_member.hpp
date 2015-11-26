@@ -17,7 +17,7 @@ namespace doppl {
 
     public:
         //Get value and sync
-        const T& get() {
+        const T& get() const {
             return _future.get();
         };
 
@@ -52,13 +52,19 @@ namespace doppl {
 
         //future = value
         FM<T>& set(T&& input) {
-            std::promise<T> p;
-            _future = p.get_future();
-            p.set_value(input);
+            _promise = std::promise<T>();
+            _future = _promise.get_future();
+            _promise.set_value(input);
             return *this;
         };
 
         task_member() {};
+
+        task_member(T input) {
+            _promise = std::promise<T>();
+            _future = _promise.get_future();
+            _promise.set_value(input);
+        };
 
         template<typename V>
         task_member(V& input) {

@@ -12,7 +12,7 @@ namespace doppl {
         T _data;
     public:
         //Get value
-        const T& get() {
+        const T& get() const {
             return _data;
         };
 
@@ -44,9 +44,8 @@ namespace doppl {
 
         task_member() {};
 
-        template<typename... Ts>
-        task_member(Ts&... input) {
-            this->set(input...);
+        task_member(T input) {
+            this->data = input;
         };
 
     };

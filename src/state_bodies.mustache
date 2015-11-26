@@ -1,0 +1,21 @@
+{{id}}.set([=] (auto& yield, auto& next, auto& finish
+    {{#parameter_declarations.signature}}
+        , {{ semantics.action_semantic }}<{{{ type }}}> {{ id }}
+    {{/parameter_declarations.signature}}
+) {
+    //Members
+    {{#body.members}}
+    {{ semantics.action_semantic }}<{{{ type }}}> {{ id }};
+    {{/body.members}}
+
+    //States
+    {{#body.states}}
+    {{ semantics.action_semantic }}<{{{ type }}}> {{ id }};
+    {{/body.states}}
+
+    //Expressions TODO
+
+    {{#body.states}}
+    {{{state_bodie}}}
+    {{/body.states}}
+});

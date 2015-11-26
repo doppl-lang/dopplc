@@ -1,28 +1,26 @@
 #include "lib/doppl.hpp"
 
 using namespace doppl;
-using std::string;
-using byte = unsigned char;
 
 //Stdin and stdout
 static input_t input;
 static output_t output;
 
-int {{ header.id }}() {
-    const int range = {{ header.range }};
+int doppl_main() {
+    const int range = 1;
 
     //Data oriented private task members
-    {{#private_members}}
     std::array<
-        {{ semantics.action_semantic }}<{{{ type }}}>,
-        {{ header.range }}
-    > _{{ id }};
-    {{/private_members}}
+        DM<int>,
+        range
+    > _foo;
+    std::array<
+        FM<int>,
+        range
+    > _zee;
 
     //Shared task members
-    {{#shared_members}}
-    shared<{{ semantics.action_semantic }}<{{{ type }}}>> {{ id }};
-    {{/shared_members}}
+    shared<DM<int>> sha;
 
     //Task body
     auto task_body = [&] (
@@ -34,14 +32,13 @@ int {{ header.id }}() {
         task_loop<void> loop;
 
         //Private Members
-        {{#private_members}}
-        decltype(_{{ id }}[tid])& {{ id }} = _{{ id }}[tid];
-        {{/private_members}}
+        decltype(_foo[tid])& foo = _foo[tid];
+        decltype(_zee[tid])& zee = _zee[tid];
         
         //States
-        {{#states}}
-        {{ semantics.action_semantic }}<{{{ type }}}> {{ id }};
-        {{/states}}
+        SM<void> init;
+        SM<void> bar;
+        SM<void, FM<int>> tar;
 
         init.set([&] (auto& yield, auto& next, auto& finish) {
             output.set("Init State Works\n");
@@ -59,11 +56,20 @@ int {{ header.id }}() {
         bar.set([&] (auto& yield, auto& next, auto& finish) {
             output.set("State Transition Works\n");
 
+            auto anan = DM<int>();
+            std::cout << &anan << std::endl;
+            anan.set(32);
+
             //Internal State Declarations Test
-            SM<int> temp([=] (auto& yield, auto& next, auto& finish) { 
+            SM<int> temp([=] (auto& yield, auto& next, auto& finish) {
+                std::cout << anan.get() << std::endl;
+                std::cout << &anan << std::endl;
+
                 SM<int> clone([=] (auto& yield, auto& next, auto& finish) {
                     output.set("Transition in Cloned Tasks Works\n");
                     next.set(finish);
+                    std::cout << anan.get() << std::endl;
+                    std::cout << &anan << std::endl;
                     yield.set_value(99);
                 }); 
                 output.set("Internal State Declerations Work\n");
@@ -106,7 +112,7 @@ int {{ header.id }}() {
 //Start runtime
 int main() {
     std::cout << std::endl << "********Doppl Runtime Test" << std::endl << std::endl;
-    assert({{ header.id }}() == 0);
+    assert(doppl_main() == 0);
     std::cout << std::endl << "********Doppl Runtime Test Success" << std::endl;
     return 0;
 };
