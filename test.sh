@@ -8,5 +8,5 @@ mv doppl_grammar.js ../bin/doppl_grammar.js
 cp doppl.cpp.mustache ../bin/doppl.cpp.mustache
 cp state_bodies.mustache ../bin/state_bodies.mustache
 cd ../bin
-node dopplc.js ../test.doppl
+node dopplc.js ../$1
 
