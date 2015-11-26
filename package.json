@@ -1,0 +1,8 @@
+{
+    "name": "dopplc",
+    "version": "0.0.1",
+    "dependencies": {
+        "commander" : "latest",
+        "mustache" : "latest"
+    }
+}
