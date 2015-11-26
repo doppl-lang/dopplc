@@ -1,6 +1,5 @@
 #!/bin/sh
 clear
-rm -rf bin
 coffee -b --output bin --compile src
 cd src
 jison doppl_grammar.jison 
@@ -13,4 +12,5 @@ cd bin
 node dopplc.js ../$1
 cd ..
 rm -rf node_modules
+rm -rf bin
 
