@@ -1,32 +1,10 @@
-task(4) myTask {
-    shared a_shared_data : string           #a single, shared string owned by all threads of myTask (4 threads)
-    shared once a_shared_once_data : bool   #a single, shared once boolean for conditional branching
-    
-    init: {                                 #init state (myTask starts running here)
-        a_shared_once_data = 
-            true -> a_state                 #will only be executed and branch once although myTask runs on many threads
-                                            #will wait other threads to finish before branch due to '->'
-        finish                              #finish is non-blocking
+task(2) myTask {
+    init: {
+        output = "Hello World! "
+        -->foo
     }
 
-    a_state: {
-        a_shared_data = ("Hello " ++        #string concatenation
-                another_state(value: "World!"))
-        -->finalize                         #won't wait other threads to branch due to '-->'
-    }
-
-    another_state: (value: string) {        #a state with a parameter
-        message: string                     #an internal nullable member for another_state (initally null)
-
-        message = :{                        #a closure (anonymouse state)
-            yield value                     #states become values when executed or branched
-        }
-
-        yield message
-    }
-
-    finalize: {
-        output = a_shared_data              #message is printed to console
-        finish                              #end of our task
+    foo: {
+        finish
     }
 }

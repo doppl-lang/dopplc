@@ -1,6 +1,7 @@
 #include "lib/doppl.hpp"
 
 using namespace doppl;
+using std::string;
 
 //Stdin and stdout
 static input_t input;
@@ -90,6 +91,13 @@ int doppl_main() {
 
         tar.set([&] (auto& yield, auto& next, auto& finish, auto param) {
             assert(param.get() == 99);
+
+            DM<string> lol;
+            SM<string> temp([=] (auto& yield, auto& next, auto& finish) {
+                yield.set_value("yoyoyo");
+            }); 
+            lol.set("" + (FM<string>(temp, true)).get());
+            output.set(lol.get());
 
             output.set("Parameterized Transition Works\n");
 

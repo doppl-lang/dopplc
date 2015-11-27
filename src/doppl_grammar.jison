@@ -110,7 +110,7 @@ taskheader
 taskbody
     : init_state_declaration whitespaces
         {
-            $$ = { init_state: $2 , members: [], states: [] };
+            $$ = { init_state: $1 , members: [], states: [] };
         }
     | init_state_declaration declarations whitespaces
         {

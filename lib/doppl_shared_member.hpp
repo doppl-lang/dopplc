@@ -21,14 +21,14 @@ namespace doppl {
         };
 
         //Assignment for literals
-        shared<T>& set(decltype(member.get())& v) {
+        shared<T>& set(const decltype(member.get())& v) {
             std::lock_guard<std::mutex> lock(m);
             member.set(v);
             return *this;
         };
 
         //Forward get
-        auto get() -> decltype(member.get()) {
+        auto get() -> const decltype(member.get()) {
             std::lock_guard<std::mutex> lock(m);
             return member.get();
         };

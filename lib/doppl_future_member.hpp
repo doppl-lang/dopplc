@@ -51,7 +51,7 @@ namespace doppl {
         };
 
         //future = value
-        FM<T>& set(T&& input) {
+        FM<T>& set(const T&& input) {
             _promise = std::promise<T>();
             _future = _promise.get_future();
             _promise.set_value(input);

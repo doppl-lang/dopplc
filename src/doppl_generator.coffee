@@ -24,7 +24,7 @@ solveNumber = (instruction) ->
     'int'
   else if number.search('0b') != -1
     'int'
-  else if number.search('.') != -1
+  else if number.search(/\./) != -1
     'float'
   else
     'int'
@@ -213,8 +213,9 @@ solveState = (state) ->
       return
 
     state.body.states.forEach solveState
+    state.body.members.forEach solveMember
 
-    yields = state.body.expressions.filter((expression) ->
+    yields = state.body.expressions.filter ((expression) ->
       expression.operation == 'yield'
     )
 
@@ -249,14 +250,19 @@ solveState = (state) ->
 
   state.type = result
 
-
   # if state.id.substring(0, 4) == 'ANON'
-  #   state.parent.states.push state
+  #    state.parent.states.push state
+
   result
 
 module.exports =
   generate: (ast) ->
     setGlobalAst ast
+
+    ast.body.states.forEach solveState
+    solveState ast.body.init_state
+    ast.body.members.forEach solveMember
+
     view = {}
     view.header = ast.header
     view.private_members = ast.body.members.filter((member) ->
@@ -265,15 +271,89 @@ module.exports =
     view.shared_members = ast.body.members.filter((member) ->
       member.semantics.scope_semantic == 'shared'
     )
-    solveState ast.body.init_state
+
     view.states = ast.body.states
     view.states.push ast.body.init_state
+
+    render_expression = (expression) ->
+      console.log 'Expression'
+      console.log expression
+      
+      result = 
+        str: ''
+
+      switch
+        when expression.id?
+          if expression.parameters? and !(util.isArray expression.parameters)
+            console.log expression.para
+            expression.parameters.application = expression.parameters.application.sort (a,b) -> if a.id < b.id then -1 else 1
+
+            result.str = result.str + '(FM<' + expression.type + '>(' + expression.id + ', false, '
+
+            for app in expression.parameters.application
+              result.str = result.str + (render_expression app.value) + ', '
+            result.str = result.str.slice 0, -2
+
+            result.str = result.str + ')).get() '
+          else
+            result.str = result.str + expression.id
+
+        when expression.number?
+          result.str = result.str + expression.number
+
+        when expression.bool?
+          result.str = result.str + expression.bool
+
+        when expression.string?
+          result.str = result.str + '"' + expression.string + '"'
+
+        when expression.group?
+          result.str = result.str + '( ' + (render_expression expression.group) + ' )'
+
+        else
+          switch
+            when expression.operation is 'yield'
+              result.str = result.str + 'yield.set_value(' + (render_expression expression.right) + ') '
+            when expression.operation is 'transition'
+              result.str = result.str + 'next.set(' + (render_expression expression.transition) + ');return '
+            when expression.operation is 'finish'
+              result.str = result.str + 'next.set(finish);return'
+            else
+              
+
+              if expression.operation is '++'
+                expression.operation = '+'
+
+              if expression.operation is '='
+                if expression.right? and expression.right.body? and expression.right.id? and expression.right.id.substring(0, 4) == 'ANON'
+                  result.str = result.str + 'SM<' + expression.right.type + '> ' + expression.right.id + ';\n'
+                  result.str = result.str + render_state_body expression.right
+
+                result.str = result.str + (render_expression expression.left)
+                result.str = result.str + '.set( '
+                result.str = result.str + (render_expression expression.right) + ') '
+              else
+                result.str = result.str + (render_expression expression.left)
+                result.str = result.str + ' ' + expression.operation
+                if expression.right
+                  result.str = result.str + ' ' + (render_expression expression.right) + '.get() '
+
+  
+      console.log result.str
+      expression.expression_bodie = result.str
     
-    render_state_body = (state1) ->
+    render_state_body = (state1, captureByRef) ->
+      state1.body.expressions.forEach (e) -> e.expression_bodie = (render_expression e) + ';\n'
+
       state1.body.states.forEach (state2) ->
+        state2.body.expressions.forEach render_expression
+
         render_state_body state2
-      state1.state_bodie = mustache.render (fs.readFileSync 'state_bodies.mustache', 'utf8'), state1
-    ast.body.states.forEach render_state_body
+
+      template = if captureByRef? then 'task_state_bodies.mustache' else 'state_bodies.mustache'
+      state1.state_bodie = mustache.render (fs.readFileSync template, 'utf8'), state1
+    
+    ast.body.states.forEach (s) -> render_state_body s, true
 
     output = mustache.render (fs.readFileSync 'doppl.cpp.mustache', 'utf8'), view
     result =

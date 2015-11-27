@@ -37,7 +37,7 @@ namespace doppl {
         };
 
         //data = value
-        DM<T>& set(T&& input) {
+        DM<T>& set(const T&& input) {
             this->_data = input;
             return *this;
         };

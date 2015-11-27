@@ -23,7 +23,7 @@ namespace doppl {
         };
 
         //state = value
-        SM<T, Ts...>& set(decltype(_state) input) {
+        SM<T, Ts...>& set(const decltype(_state) input) {
             _state = input;
             return *this;
         };
@@ -42,7 +42,7 @@ namespace doppl {
     private:
         std::function<void(std::promise<T>&, SM<T>&, SM<T>&)> _state;
     public:
-        //Get state
+        // TODO : return future
         auto get() -> const decltype(_state) {
             return _state;
         };
