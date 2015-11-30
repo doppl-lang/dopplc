@@ -128,17 +128,18 @@ solveOperation = (instruction) ->
       solveOperation instruction.transition
 
     if instruction.left.id
-      result = typeOfSymbol(instruction.left, instruction.left)
+      result = typeOfSymbol instruction.left, instruction.left
       if result == undefined
         # TODO : error (symbol is not defined)
         compileSuccess = false
         return result
     else
-      result = solveOperation(instruction.left)
+      result = solveOperation instruction.left
 
     if instruction.right
-      rightResult = solveOperation(instruction.right)
+      rightResult = solveOperation instruction.right
       if result == rightResult or result == 'byte' and rightResult == 'int'
+        instruction.type = result
         return result
       else
         # TODO: error (type mismatch on operation)
@@ -146,6 +147,7 @@ solveOperation = (instruction) ->
         compileSuccess = false
         return result
 
+    instruction.type = result
     return result
 
   else if instruction.id
@@ -186,6 +188,7 @@ solveMember = (member) ->
 
 solveState = (state) ->
   console.log 'Solving state:      ' + state.id
+
   if state.type
     return state.type
 
@@ -200,6 +203,7 @@ solveState = (state) ->
       if state.semantics.action_semantic == 'state'
         state.semantics.action_semantic = 'SM'
 
+    # TODO : locate circular transitions (loops)
     state.body.expressions.forEach (expression) ->
       switch expression.operation
         when 'yield'
@@ -259,8 +263,9 @@ module.exports =
   generate: (ast) ->
     setGlobalAst ast
 
+    ast.body.states.unshift ast.body.init_state
+
     ast.body.states.forEach solveState
-    solveState ast.body.init_state
     ast.body.members.forEach solveMember
 
     view = {}
@@ -273,7 +278,6 @@ module.exports =
     )
 
     view.states = ast.body.states
-    view.states.push ast.body.init_state
 
     render_expression = (expression) ->
       console.log 'Expression'

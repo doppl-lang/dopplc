@@ -10,7 +10,7 @@ cp task_state_bodies.mustache ../bin/task_state_bodies.mustache
 cd ..
 npm i
 cd bin
-node dopplc.js ../$1 ../doppl_main
+node --stack-size=64 dopplc.js ../$1 ../doppl_main
 cd ..
 rm -rf node_modules
 rm -rf bin

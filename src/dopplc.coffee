@@ -38,4 +38,3 @@ else
       console.log cpp.output
       console.log 'Successfully compiled.'
       fs.writeFile cli.args[1]+'.cpp', cpp.output, () -> return
-    # TODO : write cpp to a file
