@@ -4,21 +4,21 @@ Doppl is a new programming language that aims to provide a natural syntax for im
 
 Official compiler source code is stored in this repository.
 
-##Dependencies
+## Dependencies
 * [Clang](http://clang.llvm.org/get_started.html)
 * [Node.js](https://nodejs.org/)
 * [Coffeescript](http://coffeescript.org/)
 * [Jison](http://jison.org/)
 
-##Test
+## Test
 Run following command in your terminal to generate the parser and print AST of `test.doppl` to your console.
 ```
 ./test.sh test.doppl
 ```
 
-##References
+## References
 * [Language Site](http://www.doppl.org)
 * [Presentation from CppNow 2014 conference](https://github.com/diegoperini/cppnow2014-doppl)
 
-##Why GPLv2 as Licence?
+## Why GPLv2 as Licence?
 Since this project is too immature to be used in production, any modifications made should serve to its improvement. Once we have a stable release of dopplc, this license will be replaced with a less strict alternative such as MIT License.
